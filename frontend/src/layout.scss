@@ -1,0 +1,612 @@
+/* Keep the desktop frame fixed while allowing longer dashboard content to be reached. */
+.screen {
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
+}
+
+.screen::-webkit-scrollbar {
+  width: 9px;
+}
+.screen::-webkit-scrollbar-thumb {
+  background: #bfe3c9;
+  border: 3px solid #fff;
+  border-radius: 8px;
+}
+.screen::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Slightly larger type for desktop presentation readability. */
+body {
+  font-size: 15px;
+}
+.heading h1,
+.assistant-heading h1 {
+  font-size: 28px;
+}
+.heading p,
+.assistant-heading p {
+  font-size: 13px;
+}
+.nav-link,
+.top-status {
+  font-size: 12px;
+}
+.metric b,
+.mini-card b,
+.card h2,
+.side-card h2 {
+  font-size: 12px;
+}
+.metric strong {
+  font-size: 24px;
+  line-height: 27px;
+}
+.metric strong small,
+.mini-card strong small {
+  font-size: 13px;
+}
+.metric em,
+.mini-card em {
+  font-size: 11px;
+}
+.energy-node b,
+.energy-node small {
+  font-size: 13px;
+}
+.battery-card dl div,
+.statusline {
+  font-size: 11px;
+}
+.strategy-card h2 {
+  font-size: 14px;
+}
+.message > div {
+  font-size: 12px;
+  line-height: 16px;
+}
+.primary,
+.apply {
+  font-size: 13px;
+}
+.suggestions,
+.suggestions button,
+.chat-input input {
+  font-size: 11px;
+}
+.side-card li {
+  font-size: 11px;
+}
+
+/* A more compact, centred desktop canvas prevents the dashboard feeling too wide. */
+.prototype-shell {
+  width: min(75vw, 177.7778vh);
+  height: 100vh;
+  margin: 0 auto;
+}
+
+/* Symmetrical, compact live-energy flow. */
+.compact-flow {
+  display: grid;
+  justify-items: center;
+  gap: 1px;
+  padding-top: 4px;
+}
+.compact-flow .flow-central {
+  display: grid;
+  justify-items: center;
+  gap: 1px;
+}
+.compact-flow .energy-node {
+  justify-content: center;
+  gap: 8px;
+}
+.compact-flow .energy-node > span {
+  width: 40px;
+  height: 40px;
+  font-size: 21px;
+}
+.compact-flow .energy-node b {
+  font-size: 12px;
+}
+.compact-flow .energy-node small {
+  display: inline;
+  margin-left: 4px;
+}
+.compact-flow .flow-arrow {
+  color: #2b8bec;
+  font-size: 20px;
+  line-height: 16px;
+}
+.compact-flow .split-connector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: 64%;
+  margin: -3px 0 -1px;
+  font-size: 22px;
+  line-height: 16px;
+}
+.compact-flow .split-connector span:first-child {
+  color: #19a84c;
+  text-align: left;
+}
+.compact-flow .split-connector span:last-child {
+  color: #634cf0;
+  text-align: right;
+}
+.compact-flow .end-nodes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: 78%;
+  gap: 22px;
+  padding: 0;
+}
+.compact-flow .end-nodes .energy-node {
+  justify-content: flex-start;
+  padding: 6px 8px;
+  border: 1px solid #edf1ee;
+  border-radius: 10px;
+}
+.compact-flow .energy-node em {
+  display: block;
+  line-height: 13px;
+}
+
+/* React Flow-based, animated energy flow. */
+.flow-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.flow-note {
+  margin: 2px 0 0;
+  color: #84909c;
+  font-size: 9px;
+  line-height: 1.35;
+}
+.energy-flow-graph {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+.energy-flow-graph .react-flow__pane,
+.energy-flow-graph .react-flow__node {
+  cursor: default;
+}
+.energy-flow-node {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 150px;
+  min-height: 64px;
+  padding: 8px 10px;
+  border: 1px solid #e4ebe7;
+  border-radius: 14px;
+  background: rgb(255 255 255 / 96%);
+  box-shadow: 0 5px 16px rgb(24 42 34 / 8%);
+}
+.energy-flow-boundary {
+  display: block;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+.energy-flow-node__icon {
+  display: grid;
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: 50%;
+  font-size: 22px;
+}
+.energy-flow-node__copy {
+  display: grid;
+  min-width: 0;
+}
+.energy-flow-node__copy strong {
+  color: #162235;
+  font-size: 12px;
+  line-height: 16px;
+}
+.energy-flow-node__copy small,
+.energy-flow-node__copy em {
+  overflow: hidden;
+  color: #5b6878;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.energy-flow-node__copy em {
+  color: #079346;
+}
+.energy-flow-node--solar .energy-flow-node__icon {
+  color: #f5a900;
+  background: #fff7d9;
+}
+.energy-flow-node--home .energy-flow-node__icon {
+  color: #2584ee;
+  background: #e9f3ff;
+}
+.energy-flow-node--battery .energy-flow-node__icon {
+  color: #07a849;
+  background: #e9faed;
+}
+.energy-flow-node--grid .energy-flow-node__icon {
+  color: #6651ec;
+  background: #f2efff;
+}
+.energy-flow-handle {
+  width: 1px;
+  height: 1px;
+  min-width: 0;
+  min-height: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+.energy-flow-particles circle {
+  filter: drop-shadow(0 0 2px rgb(255 255 255 / 85%));
+}
+.energy-flow-particles.is-idle {
+  display: none;
+}
+.energy-flow-legend {
+  position: absolute;
+  z-index: 5;
+  top: 4px;
+  right: 4px;
+  display: flex;
+  gap: 12px;
+  color: #667382;
+  font-size: 9px;
+  font-weight: 600;
+  pointer-events: none;
+}
+.energy-flow-legend span::before {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 5px;
+  border-radius: 50%;
+  content: "";
+  vertical-align: 1px;
+}
+.energy-flow-legend .is-solar::before {
+  background: #e8a20a;
+  box-shadow: 0 0 0 2px rgb(232 162 10 / 15%);
+}
+.energy-flow-legend .is-battery::before {
+  background: #13a34b;
+  box-shadow: 0 0 0 2px rgb(19 163 75 / 15%);
+}
+.energy-flow-legend .is-grid::before {
+  background: #6651ec;
+  box-shadow: 0 0 0 2px rgb(102 81 236 / 15%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .energy-flow-particles {
+    display: none;
+  }
+}
+
+/* Three-card energy overview. */
+.dashboard-top {
+  grid-template-columns: 1fr 1fr;
+}
+.exchange-card {
+  padding: 14px;
+  background: linear-gradient(145deg, #ffffff 0%, #f7fff8 100%);
+}
+.exchange-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.exchange-title span {
+  color: #099342;
+  font-size: 10px;
+  font-weight: 700;
+}
+.exchange-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 12px 0 9px;
+  padding: 11px 13px;
+  border: 1px solid #dff0e3;
+  border-radius: 10px;
+  background: #fff;
+}
+.exchange-hero small {
+  display: block;
+  color: #607083;
+  font-size: 9px;
+}
+.exchange-hero strong {
+  display: block;
+  color: #078e3a;
+  font-size: 17px;
+  margin-top: 2px;
+}
+.exchange-hero p {
+  margin: 3px 0 0;
+  color: #657386;
+  font-size: 9px;
+}
+.exchange-mark {
+  display: grid;
+  place-items: center;
+  width: 39px;
+  height: 39px;
+  border-radius: 50%;
+  color: #fff;
+  background: #12a34a;
+  font-size: 23px;
+  box-shadow: 0 5px 11px #15a84b35;
+}
+.route-list > div {
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 0;
+  border-bottom: 1px solid #edf1ee;
+}
+.route-icon {
+  width: 25px;
+  height: 25px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  font-size: 14px;
+}
+.sun-route {
+  color: #e9a000;
+  background: #fff7df;
+}
+.battery-route {
+  color: #079d45;
+  background: #e9f9ee;
+}
+.grid-route {
+  color: #634be9;
+  background: #f0edff;
+}
+.route-list p {
+  margin: 0;
+}
+.route-list b,
+.route-list small {
+  display: block;
+}
+.route-list b {
+  font-size: 10px;
+}
+.route-list small {
+  color: #6b7788;
+  font-size: 8px;
+  margin-top: 2px;
+}
+.route-list > div > strong {
+  color: #1c2a3a;
+  font-size: 11px;
+}
+.exchange-footer {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  margin-top: 9px;
+  padding-top: 3px;
+}
+.exchange-footer span,
+.exchange-footer small {
+  color: #5d6b7c;
+  font-size: 9px;
+}
+.exchange-footer strong {
+  color: #078e3a;
+  font-size: 18px;
+}
+.exchange-footer small {
+  grid-column: 1 / -1;
+  margin-top: 2px;
+}
+
+/* Detailed Canvas chart with room for visible axes and data variation. */
+.chart-card {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 10px;
+}
+.energy-echarts {
+  display: block;
+  width: 100%;
+  flex: 1;
+  min-height: 105px;
+  margin: 4px 0 1px;
+}
+
+/* React layout: preserve the prototype while keeping all content reachable. */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+.nav-link {
+  display: flex;
+  align-items: center;
+}
+button,
+input,
+select {
+  font-family: inherit;
+}
+button:focus-visible,
+a:focus-visible,
+select:focus-visible,
+input:focus-visible {
+  outline: 2px solid #098d3a;
+  outline-offset: 3px;
+}
+.prototype-shell {
+  width: min(1440px, 100%);
+  min-width: 0;
+  height: 100dvh;
+  min-height: 0;
+}
+.topbar {
+  height: 72px;
+  min-height: 72px;
+}
+.screen {
+  height: calc(100dvh - 72px);
+  padding: 24px 32px;
+}
+.dashboard-top {
+  height: 320px;
+}
+.chart-card {
+  height: 220px;
+}
+.bottom-grid {
+  height: auto;
+  min-height: 145px;
+}
+.assistant-layout {
+  height: max(620px, calc(100dvh - 270px));
+}
+.chat-side,
+.right-side {
+  min-height: 0;
+  min-width: 0;
+}
+.chat-log {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  height: auto;
+}
+.chat-input input {
+  min-width: 0;
+}
+.side-card,
+.strategy-side {
+  height: auto;
+}
+.how-card {
+  height: auto;
+  min-height: 90px;
+}
+.card-title select {
+  border: 1px solid #dfe7e2;
+  border-radius: 6px;
+  background: #fafcfb;
+  padding: 5px 9px;
+}
+.demo-note {
+  font-size: 9px;
+  color: #718093;
+  text-align: right;
+}
+.apply:disabled {
+  cursor: default;
+}
+@media (max-width: 1000px) {
+  .brand {
+    font-size: 28px;
+  }
+  .metric {
+    height: 83px;
+  }
+  .metric strong {
+    font-size: 24px;
+  }
+  .metric b,
+  .mini-card b {
+    font-size: 12px;
+  }
+  .icon {
+    width: 36px;
+    height: 36px;
+    font-size: 22px;
+  }
+  .top-status {
+    font-size: 11px;
+  }
+  .assistant-layout {
+    grid-template-columns: 1.6fr 1fr;
+  }
+}
+@media (max-width: 700px) {
+  .screen {
+    padding: 20px 16px;
+  }
+  .topbar {
+    padding: 0 16px;
+    gap: 16px;
+  }
+  .top-status {
+    display: none;
+  }
+  nav {
+    gap: 20px;
+  }
+  .brand small {
+    display: none;
+  }
+  .metric-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin: 20px 0;
+  }
+  .dashboard-top {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+  .flow-card {
+    height: 320px;
+  }
+  .chart-card {
+    margin-top: 16px;
+  }
+  .bottom-grid {
+    grid-template-columns: 1fr;
+    margin-top: 16px;
+  }
+  .mini-card {
+    min-height: 135px;
+  }
+  .save {
+    margin-left: 0;
+  }
+  .assistant-layout {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+  }
+  .chat-side {
+    height: 640px;
+  }
+  .strategy-card {
+    margin-left: 0;
+    width: 100%;
+  }
+  .how-card > div {
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .how-card {
+    margin-top: 16px;
+  }
+  .message > div {
+    max-width: 82%;
+  }
+}

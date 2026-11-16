@@ -1,0 +1,16 @@
+# AIVY P0 backend: API layer + the strategy modules it imports
+# (strategy/codes/forecast.py needs numpy, pandas, scikit-learn and joblib).
+# matplotlib / jupyter from strategy/requirements.txt are not needed here.
+fastapi>=0.115
+uvicorn[standard]>=0.30
+pydantic>=2.7
+tzdata>=2024.1
+numpy>=1.26
+pandas>=2.1
+scikit-learn>=1.7
+joblib>=1.4
+# needed by later phases (optimizer.py / price_model.py), not by the P0 routes
+scipy
+lightgbm
+holidays
+requests

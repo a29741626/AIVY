@@ -1,0 +1,14 @@
+# Battery strategy: Python packages
+# Install once:   pip install -r requirements.txt
+# Tested with Python 3.10 (Windows, Jupyter).
+
+numpy
+pandas
+scipy           # linprog: the 24-hour planner
+scikit-learn    # the PV (solar) model in models/pv_prediction_models.pkl
+lightgbm        # the price model (price_model.py, models/price_models_*.pkl)
+joblib          # loading the saved models
+holidays        # public holidays, a price model feature
+requests        # Ivy Bridge API and the AI assistant
+matplotlib      # charts in the notebooks
+jupyter         # to run the notebooks
