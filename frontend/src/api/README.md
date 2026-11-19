@@ -41,13 +41,14 @@ Runs the repo's real `fault_detection.py` over the station's recorded days: the
 | `soc_ceiling_pct` / `charge_limit_w` | The station's own learned "battery full" level and maximum charge rate. |
 | `suspected_sign_issue` | `battery` and/or `load` when the energy balance only holds after a sign flip. |
 | `trends` | `gradual_pv_decline` and `battery_capacity_shrink` checks. |
-| `fault_injected` / `fault_window` | `true` while `backend/fault_config.json` is zeroing this station's PV. |
+| `fault_injected` / `fault_window` | `true` while `backend/fault_config.json` is zeroing this station's PV. Diagnostics only; the dashboard does not render them. |
 | `days_analysed` | Recorded days that fed the baseline. |
 
 The readings are real; the fault is simulated. Whenever a fault is injected the
-same response carries a `FAULT_INJECTED` warning, so the UI must show
-`fault_injected` (the dashboard tags it "Simulated fault") and never present a
-simulated drop as a genuine one.
+same response carries a `FAULT_INJECTED` warning for API clients. `/health` reports the
+injected drop like a detected one (`sub_healthy` + `sudden_drop_to_zero` + explanation)
+once 30 minutes of daylight slots have completed, so the dashboard shows it as an
+ordinary fault and must not add a "Simulated fault" tag.
 
 ## Assistant, simulation and settings
 

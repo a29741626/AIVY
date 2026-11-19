@@ -398,11 +398,6 @@ export default function Dashboard({
                 {diagnosis.suspected_sign_issue.join("/")} sign
               </span>
             )}
-            {diagnosis?.fault_injected && (
-              <span className="simulated">
-                Simulated fault {diagnosis.fault_window}
-              </span>
-            )}
           </div>
           <small className="health-meta">
             {diagnosis

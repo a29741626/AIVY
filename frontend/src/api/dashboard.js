@@ -14,7 +14,9 @@ export const getEnergyHistory = (stationId, date, options) =>
     options,
   );
 
-// Real recorded data through the real fault_detection.py; the fault itself is
-// simulated (backend/fault_config.json) and flagged by data.fault_injected.
+// Real recorded data through the real fault_detection.py. An injected demo fault
+// (backend/fault_config.json) is reported by the API like a detected one, so this
+// response is the single source of truth for the card; fault_injected/fault_window
+// stay diagnostics-only and are not rendered.
 export const getStationHealth = (stationId, options) =>
   request(`/api/stations/${encodeURIComponent(stationId)}/health`, options);

@@ -194,7 +194,7 @@ Energy Exchange row, the Today's Energy chart, then four mini cards.
 | Today's Savings | `/financial-summary` | `data.today_savings_aud`, `data.actual_costs.export_earnings_aud`, `data.period.is_partial`, `data.period.intervals` (out of 288) |
 | Electricity Price | `/market` | `data.price.import.value` (AUD/kWh, shown in c/kWh), `data.history[]` |
 | Weather | `/market` | `data.weather.condition`, `.temperature_c`, `.ghi_w_m2`, `.cloud_cover_pct` |
-| System Health | `/health` | `data.status`, `.fault_types`, `.explanation`, `.suspected_sign_issue`, `.energy_balance_violation_pct`, `.fault_injected`, `.fault_window`, `.soc_ceiling_pct`, `.charge_limit_w`, `.days_analysed` |
+| System Health | `/health` | `data.status`, `.fault_types`, `.explanation`, `.suspected_sign_issue`, `.energy_balance_violation_pct`, `.soc_ceiling_pct`, `.charge_limit_w`, `.days_analysed` |
 
 ### Flow directions
 
@@ -224,9 +224,10 @@ unknown string is filtered out instead of crashing the list.
 - A `suspected_sign_issue` chip explains itself through the `title` attribute, which
   carries `energy_balance_violation_pct` (the share of slots that fail
   `pv = load + battery + grid`).
-- When `fault_injected` is true the card shows a **Simulated fault** chip with the
-  `fault_window`. The readings are real, the injected drop is not: never present a
-  simulated drop as a genuine fault.
+- Injected demo faults need no special case: `/health` reports them with the same
+  `status`, pattern names and explanation as a detected fault, so the card shows the
+  problem badge and chips. Do not add a "Simulated fault" tag; `fault_injected` and
+  `fault_window` are diagnostics only and are not rendered.
 - The footnote prints the station's learned `soc_ceiling_pct`, its `charge_limit_w`, and
   how many recorded days formed the baseline.
 
@@ -529,5 +530,6 @@ npm run preview
 - `simulationStrategy()` is the only path from a chat proposal to the sandbox; do not widen it.
 - No HTML injection, no class components, no direct DOM manipulation beyond the chart and
   graph containers.
-- Keep the demo copy honest: "Simulated fault" for injected faults, "Illustrative demo data"
-  for the hard-coded ranges.
+- Keep the demo copy honest: "Illustrative demo data" for the hard-coded ranges, and an
+  injected fault is rendered as the fault it is meant to simulate (the backend reports it
+  as a normal detection, with no "Simulated fault" tag in the UI).
