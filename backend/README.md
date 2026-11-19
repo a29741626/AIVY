@@ -638,7 +638,7 @@ history: the 29 recorded days before the replay day plus today's completed slots
 | `trends.gradual_pv_decline` | `{detected, change_pct, correlation, days_used, reason}` |
 | `trends.battery_capacity_shrink` | Same shape; estimated from clean charging periods |
 | `fault_injected` | True while `fault_config.json` changed today's slots |
-| `fault_window` | e.g. `"11:00-13:00"`, or `null` |
+| `fault_window` | e.g. `"09:00-13:00"`, or `null` |
 | `days_analysed` | Recorded days + today |
 | `rows_dropped` | Readings the detector had to discard |
 
@@ -646,6 +646,14 @@ The detector needs 5+ days to classify a day and 10+ days for trends; it is chea
 (~0.2 s for 30 days), so nothing is cached and a request always reflects the current
 clock and the current `fault_config.json`. `503 NO_DATA` when no slot has completed
 today or today's rows are unusable.
+
+A demo fault from `fault_config.json` is reported here like one the detector found:
+once 30 minutes of the injected window have completed during daylight, `status`
+becomes at least `sub_healthy`, `fault_types` includes `sudden_drop_to_zero`, and
+`explanation` is a plain detector sentence (for example, "No solar output
+09:00-11:20 despite available daylight..."). `fault_injected` and `fault_window`
+stay in the payload so tests and diagnostics can tell the two apart; the dashboard
+does not display them.
 
 ```sh
 curl "http://127.0.0.1:8000/api/stations/SBX-003/health"
@@ -662,7 +670,9 @@ the behaviour behind them.
 `backend/fault_config.json` is a demo knob for the P2 fault diagnostics. It forces a
 **simulated** solar failure into the data the dashboard and detector read. The detection
 is real; the fault is not, and every affected response says so with a
-`FAULT_INJECTED` warning plus `fault_injected`/`fault_window` on `/health`.
+`FAULT_INJECTED` warning plus `fault_injected`/`fault_window` on `/health`. Those fields
+are for API clients and tests; the dashboard deliberately renders the injected drop as an
+ordinary detected fault (see the `/health` section above).
 
 The file is read next to `main.py` (not under `strategy/data`) and is hot-reloaded:
 whenever its mtime changes, the next request picks up the new config — no restart.
@@ -674,7 +684,7 @@ Current contents:
   "enabled": true,
   "target_stations": ["SBX-003"],
   "fault_type": "pv_zero",
-  "start_hour": 11,
+  "start_hour": 9,
   "end_hour": 13,
   "apply_to_replay_date_only": true
 }
@@ -700,7 +710,7 @@ For every slot in `[start_hour × 12, end_hour × 12)`:
   turn a missing reading into a 0 W reading;
 - `soc_pct` and `load_w` are unchanged.
 
-Example from a live run (SBX-003, window 11:00–13:00, 24 slots):
+Example from a live run (SBX-003, window 09:00–13:00, 48 slots):
 
 ```json
 { "timestamp": "2026-11-16T11:00:00+10:30",
@@ -728,7 +738,9 @@ Example from a live run (SBX-003, window 11:00–13:00, 24 slots):
 - `enabled: false` → injected window is `(0, 0)`; nothing is changed and no warning is
   emitted.
 - An active injection always produces `FAULT_INJECTED` with the count and window label in
-  the day responses, so a client can never present it as a genuine fault.
+  the day responses, so an API client can tell it apart from a recorded failure. The
+  dashboard does not surface those fields: by product requirement the injected drop is
+  presented as an ordinary detected fault.
 
 ### Examples
 
@@ -765,7 +777,7 @@ Turn the demo fault off (keep the file for the next demo):
   "enabled": false,
   "target_stations": ["SBX-003"],
   "fault_type": "pv_zero",
-  "start_hour": 11,
+  "start_hour": 9,
   "end_hour": 13,
   "apply_to_replay_date_only": true
 }
@@ -781,21 +793,24 @@ Turn the demo fault off (keep the file for the next demo):
    ```
 
    Inside the window `pv_w` is `0.0`; the response has
-   `{"code":"FAULT_INJECTED","count":24,"message":"Simulated PV fault: PV forced to 0 W for 24 slot(s) (11:00-13:00)"}`.
+   `{"code":"FAULT_INJECTED","count":48,"message":"Simulated PV fault: PV forced to 0 W for 48 slot(s) (09:00-13:00)"}`.
 3. Check the diagnosis:
 
    ```sh
    curl "http://127.0.0.1:8000/api/stations/SBX-003/health"
    ```
 
-   Expected with the defaults (verified live at 18:17): `fault_injected: true`,
-   `fault_window: "11:00-13:00"`, `fault_types: ["sudden_drop_to_zero"]`,
-   `status: "sub_healthy"` and an explanation like
-   `"No solar output 11:15-13:00 despite strong sunlight. Worth a check - not yet a confirmed fault."`
+   Expected with the defaults once 30 minutes of the window have completed:
+   `fault_injected: true`, `fault_window: "09:00-13:00"`,
+   `fault_types: ["sudden_drop_to_zero"]`, `status: "sub_healthy"` and an explanation like
+   `"No solar output 09:00-11:20 despite available daylight. Worth a check - not yet a confirmed fault."`
+   If the detector has already reached its own threshold, its sentence (for example
+   `"11:15-13:00 despite strong sunlight"`) is kept instead.
 4. Other stations must be unaffected; `FAULT_INJECTED` only appears for a targeted one.
 
-Injection at night (e.g. 22:00–23:00) still zeroes PV and still warns, but the detector
-needs strong sunlight to flag a pattern, so expect no `sudden_drop_to_zero` from it.
+Injection at night (e.g. 22:00–23:00) still zeroes PV and still warns, but `/health`
+stays `healthy`: the service only escalates an injected window whose completed slots had
+daylight (mean GHI at least 20 W/m2), because a zero reading at night is normal.
 
 ## Service layer and data flow
 
@@ -889,7 +904,7 @@ python backend\tests\test_p0_services.py 2> $env:TEMP\p0.log; Write-Output "exit
 | `400 INVALID_DATE` on a past date | Date format is strict and future dates are rejected |
 | Settings reset after restart | By design: `state_store` is in-memory only |
 | Fault seems to do nothing | Window already passed, station not targeted, `enabled` is not `true`, or `fault_type` is not `pv_zero`; check the server log |
-| `FAULT_INJECTED` appears but no fault is detected | Injection happened at night or there was no strong sunlight, so the detector has no pattern to flag |
+| `FAULT_INJECTED` appears but `/health` stays `healthy` | Fewer than 30 injected slots have completed, or the window fell at night (no daylight to compare against) |
 
 ## Known limitations
 

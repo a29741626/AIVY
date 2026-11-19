@@ -2,7 +2,7 @@
   "enabled": true,
   "target_stations": ["SBX-003"],
   "fault_type": "pv_zero",
-  "start_hour": 11,
+  "start_hour": 9,
   "end_hour": 13,
   "apply_to_replay_date_only": true
 }

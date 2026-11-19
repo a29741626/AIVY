@@ -399,14 +399,15 @@ class StationHealthData(BaseModel):
     status: str                                # healthy | sub_healthy | broken
     fault_types: list[str] = Field(default_factory=list)   # sudden_drop_to_zero | midday_flattening | ...
     explanation: str                           # plain English, from fault_detection.py
+                                              # (description of an injected drop when it has none)
     pct_flagged: float
     soc_ceiling_pct: float                     # the station's own "battery full" level
     charge_limit_w: float                      # the station's own maximum charging rate
     energy_balance_violation_pct: float
     suspected_sign_issue: list[str] = Field(default_factory=list)   # battery | load
     trends: dict[str, FaultTrend] = Field(default_factory=dict)     # gradual_pv_decline | battery_capacity_shrink
-    fault_injected: bool = False               # true while fault_config.json zeroes PV
-    fault_window: Optional[str] = None         # "11:00-13:00" when injected
+    fault_injected: bool = False               # diagnostics only; not shown in the UI
+    fault_window: Optional[str] = None         # "09:00-13:00" when injected; not shown in the UI
     days_analysed: int
     rows_dropped: int = 0
 
