@@ -51,10 +51,8 @@ Everything the code and notebooks need is inside this folder.
 
 ## API keys
 
-- **Gemini (the assistant):** `AQ.Ab8RN6I_quQGhlt0ZApBdolyA_XgiJJB-jjUDno2uLieY6-0rw`
-  It is also in cell 1 of the assistant notebook (`API_KEY`) and built into `Battery Strategy Explorer.html`, so Ivy bot works straight away. To use another key, press the key button at the top of Ivy bot and paste it there (kept only for the open tab, unless you tick "remember"); "Use the built-in key" switches back.
-- **Ivy Bridge (only for `codes/fetch_data.py`):** `ivyb_sk_O-EG7lQ8-heSQrM1c6oWBkji8Z48hUZ6` (Team 1 key from TEAM_1_BRIEF.pdf; 120 requests a minute).
-  It is also written in `codes/fetch_data.py` (`KEY`), so nothing needs setting up.
+- **Gemini (the assistant):** set `AIVY_GEMINI_API_KEY` in `backend/.env`.
+- **Ivy Bridge:** provide its API key through your local environment when running data-fetching tools; never commit it to the repository.
 
 ## Main results (bill + battery wear over all recorded days, saved compared with the baseline)
 

@@ -6,6 +6,9 @@ const station = (stationId, suffix = "") =>
 export const getStrategy = (stationId, options) =>
   request(station(stationId, "/strategy"), options);
 
+export const getBattery = (stationId, options) =>
+  request(station(stationId, "/battery"), options);
+
 export const updateStrategySettings = (stationId, settings, options) =>
   request(station(stationId, "/strategy"), {
     ...options,

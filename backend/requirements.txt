@@ -7,7 +7,8 @@ pydantic>=2.7
 tzdata>=2024.1
 numpy>=1.26
 pandas>=2.1
-scikit-learn>=1.7
+# The committed PV model was serialized with this version.
+scikit-learn==1.7.2
 joblib>=1.4
 # needed by later phases (optimizer.py / price_model.py), not by the P0 routes
 scipy

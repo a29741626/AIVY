@@ -22,6 +22,10 @@ from main import app  # noqa: E402
 from services import assistant_service, data_adapter, state_store, strategy_engine  # noqa: E402
 from services.errors import ApiError  # noqa: E402
 
+# These tests exercise the remote-model boundary with mocks. The running demo
+# defaults to local-only when no user-owned Gemini key is configured.
+config.LOCAL_AI_ONLY = False
+
 ADL = ZoneInfo(config.TIMEZONE)
 NOW = datetime(2026, 11, 16, 10, 3, tzinfo=ADL)   # fixed clock: slot 120
 STATION = "SBX-001"

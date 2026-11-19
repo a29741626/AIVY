@@ -45,7 +45,8 @@ PRELOAD_FORECASTS = os.getenv("AIVY_PRELOAD", "1") != "0"
 # SECRET: this value is only ever sent as an Authorization header from
 # services/assistant_service.py. It is never logged, never put in a prompt and never
 # copied into an API response - do not import it anywhere else.
-GEMINI_API_KEY = os.getenv("AIVY_GEMINI_API_KEY", "AQ.Ab8RN6I_quQGhlt0ZApBdolyA_XgiJJB-jjUDno2uLieY6-0rw")
+GEMINI_KEY_FROM_ENV = bool(os.getenv("AIVY_GEMINI_API_KEY"))
+GEMINI_API_KEY = os.getenv("AIVY_GEMINI_API_KEY", "not-configured")
 GEMINI_URL = os.getenv(
     "AIVY_GEMINI_URL", "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions")
 GEMINI_MODELS = tuple(name.strip() for name in os.getenv(
@@ -53,6 +54,13 @@ GEMINI_MODELS = tuple(name.strip() for name in os.getenv(
     "gemini-flash-lite-latest,gemini-3.5-flash-lite,gemini-3.1-flash-lite,gemini-flash-latest",
 ).split(",") if name.strip())
 GEMINI_TIMEOUT_SECONDS = float(os.getenv("AIVY_GEMINI_TIMEOUT", "30"))
+# Keep the capstone demo usable when the bundled Gemini demo key expires. This
+# fallback is deterministic and still uses only server-generated live context.
+LOCAL_AI_FALLBACK = os.getenv("AIVY_LOCAL_AI_FALLBACK", "1") != "0"
+# The bundled capstone key can expire. Unless the user supplies their own key,
+# stay local and do not send household context to an external service.
+LOCAL_AI_ONLY = os.getenv(
+    "AIVY_LOCAL_AI_ONLY", "0" if GEMINI_KEY_FROM_ENV else "1") != "0"
 
 MAX_CHAT_MESSAGE_CHARS = 1000     # a home owner's question, not an essay
 CHAT_HISTORY_TURNS = 10           # last 10 turns per conversation, held in memory

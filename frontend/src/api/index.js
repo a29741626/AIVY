@@ -6,6 +6,7 @@ export {
   getStations,
 } from "./dashboard";
 export {
+  getBattery,
   getFinancialSummary,
   getRecommendation,
   getStrategy,

@@ -54,6 +54,8 @@ ordinary fault and must not add a "Simulated fault" tag.
 
 | Function | Endpoint | Purpose |
 |---|---|---|
+| `getBattery(stationId)` | `GET /api/stations/{id}/battery` | Battery capacity, limits, reserve and time-to-full estimate. |
+| `getRecommendation(stationId)` | `GET /api/stations/{id}/recommendation` | Current MPC action, reason, window and estimated saving. |
 | `sendChatMessage(stationId, message, { conversationId })` | `POST /api/assistant/chat` | One grounded assistant turn: `content`, `evidence` and an optional `suggested_strategy`. |
 | `simulateStrategy(stationId, strategy)` | `POST /api/stations/{id}/simulate` | Saves a proposal to the simulator (simulation only, never a device command). |
 | `updateStrategySettings(stationId, settings)` | `PUT /api/stations/{id}/strategy` | Changes the mode, reserve and goal of the simulated strategy. |

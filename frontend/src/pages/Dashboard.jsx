@@ -15,7 +15,11 @@ import {
   formatNumber,
   priceSeries,
 } from "../lib/energyData";
-import { MODE_OPTIONS } from "../lib/strategy";
+import {
+  ACTION_LABELS,
+  MODE_OPTIONS,
+  clockLabel,
+} from "../lib/strategy";
 
 const ROUTES = {
   solar_to_home: {
@@ -101,6 +105,10 @@ export default function Dashboard({
   financialError,
   health,
   healthError,
+  battery,
+  batteryError,
+  recommendation,
+  recommendationError,
   error,
   onModeChange,
   modeError,
@@ -138,6 +146,8 @@ export default function Dashboard({
   const savingsText = summary ? formatAud(summary.today_savings_aud) : "—";
   const routes = directions.map((direction) => ROUTES[direction]).filter(Boolean);
   const diagnosis = health?.data;
+  const batteryDetail = battery?.data;
+  const suggested = recommendation?.data;
   // incomplete_day only says "today is still running"; the card is about faults.
   const faultTypes = (diagnosis?.fault_types ?? []).filter(
     (fault) => fault !== "incomplete_day",
@@ -308,6 +318,96 @@ export default function Dashboard({
         </article>
       </div>
       <EnergyChart stationId={stationId} refreshKey={overview?.meta.data_timestamp} />
+      <div className="api-detail-grid">
+        <article className="card battery-detail-card">
+          <div className="detail-card-head">
+            <div>
+              <small>Battery details</small>
+              <h2>{formatNumber(batteryDetail?.soc_pct, 0)}% charged</h2>
+            </div>
+            <span className="detail-card-icon battery">▯</span>
+          </div>
+          {batteryError && <p className="detail-error">{batteryError}</p>}
+          {!batteryDetail && !batteryError && (
+            <p className="detail-loading">Loading battery details…</p>
+          )}
+          {batteryDetail && (
+            <dl>
+              <div>
+                <dt>Capacity</dt>
+                <dd>{formatNumber(batteryDetail.capacity_kwh)} kWh</dd>
+              </div>
+              <div>
+                <dt>Current power</dt>
+                <dd>
+                  {formatNumber(batteryDetail.power_kw)} kW ·{" "}
+                  {BATTERY_STATE_LABELS[batteryDetail.state] ?? "Unknown"}
+                </dd>
+              </div>
+              <div>
+                <dt>Maximum power</dt>
+                <dd>{formatNumber(batteryDetail.max_charge_power_kw)} kW</dd>
+              </div>
+              <div>
+                <dt>Battery reserve</dt>
+                <dd>{formatNumber(batteryDetail.reserve_pct, 0)}%</dd>
+              </div>
+              <div>
+                <dt>Time to full</dt>
+                <dd>
+                  {batteryDetail.estimated_time_to_full_min == null
+                    ? "Available while charging"
+                    : `${Math.round(batteryDetail.estimated_time_to_full_min)} min`}
+                </dd>
+              </div>
+            </dl>
+          )}
+        </article>
+        <article className="card recommendation-card">
+          <div className="detail-card-head">
+            <div>
+              <small>AIVY recommendation</small>
+              <h2>
+                {suggested
+                  ? ACTION_LABELS[suggested.action] ?? "Hold the battery"
+                  : "Preparing the next action…"}
+              </h2>
+            </div>
+            <span className="recommendation-status">
+              {suggested?.status ?? "Loading"}
+            </span>
+          </div>
+          {recommendationError && (
+            <p className="detail-error">{recommendationError}</p>
+          )}
+          {suggested && (
+            <>
+              <p className="recommendation-text">{suggested.text}</p>
+              <p className="recommendation-reason">{suggested.reason}</p>
+              <div className="recommendation-meta">
+                <span>
+                  <small>Window</small>
+                  <b>
+                    {clockLabel(suggested.window.start_at)} –{" "}
+                    {clockLabel(suggested.window.end_at)}
+                  </b>
+                </span>
+                <span>
+                  <small>Reserve</small>
+                  <b>{formatNumber(suggested.reserve_pct, 0)}%</b>
+                </span>
+                <span>
+                  <small>Estimated daily saving</small>
+                  <b>{formatAud(suggested.estimated_savings_aud)}</b>
+                </span>
+              </div>
+              <small className="simulation-note">
+                Recommendation only · apply strategies through the simulation assistant
+              </small>
+            </>
+          )}
+        </article>
+      </div>
       <div className="bottom-grid">
         <article className="mini-card savings">
           <span className="icon money">$</span>

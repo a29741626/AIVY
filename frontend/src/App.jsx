@@ -4,9 +4,11 @@ import Header from "./components/Header";
 import Dashboard from "./pages/Dashboard";
 import AIAssistant from "./pages/AIAssistant";
 import {
+  getBattery,
   getFinancialSummary,
   getMarket,
   getOverview,
+  getRecommendation,
   getStationHealth,
   getStrategy,
   updateStrategySettings,
@@ -20,9 +22,13 @@ const FINANCIAL_POLL_MS = 600_000;
 const FINANCIAL_RETRY_MS = 60_000;
 const HEALTH_POLL_MS = 300_000;
 const HEALTH_RETRY_MS = 60_000;
+const BATTERY_POLL_MS = 60_000;
+const RECOMMENDATION_POLL_MS = 300_000;
+const DETAIL_RETRY_MS = 60_000;
 
 function useEnergyData(stationId) {
   const [energy, setEnergy] = useState({
+    stationId,
     overview: null,
     market: null,
     strategy: null,
@@ -32,6 +38,14 @@ function useEnergyData(stationId) {
   useEffect(() => {
     const controller = new AbortController();
     let timer;
+
+    setEnergy({
+      stationId,
+      overview: null,
+      market: null,
+      strategy: null,
+      error: "",
+    });
 
     // ponytail: each P1 panel lands in its own slot the moment it answers - a slow /market
     // must never hold back the four P0 cards, which only need /overview.
@@ -76,11 +90,107 @@ function useEnergyData(stationId) {
   }, [stationId]);
 
   return {
-    ...energy,
+    ...(energy.stationId === stationId
+      ? energy
+      : { overview: null, market: null, strategy: null, error: "" }),
     // A settings update answers with the same envelope shape as GET /strategy.
     setStrategy: (envelope) =>
       setEnergy((previous) => ({ ...previous, strategy: envelope })),
   };
+}
+
+function useStationDetails(stationId) {
+  const [details, setDetails] = useState({
+    stationId,
+    battery: null,
+    recommendation: null,
+    batteryError: "",
+    recommendationError: "",
+  });
+
+  useEffect(() => {
+    const controller = new AbortController();
+    let batteryTimer;
+    let recommendationTimer;
+
+    setDetails({
+      stationId,
+      battery: null,
+      recommendation: null,
+      batteryError: "",
+      recommendationError: "",
+    });
+
+    async function loadBattery() {
+      let failed = false;
+      try {
+        const battery = await getBattery(stationId, {
+          signal: controller.signal,
+        });
+        if (controller.signal.aborted) return;
+        setDetails((previous) => ({
+          ...previous,
+          battery,
+          batteryError: "",
+        }));
+      } catch (error) {
+        if (controller.signal.aborted) return;
+        failed = true;
+        setDetails((previous) => ({
+          ...previous,
+          batteryError: error.message || "Unable to load battery details.",
+        }));
+      }
+      batteryTimer = setTimeout(
+        loadBattery,
+        failed ? DETAIL_RETRY_MS : BATTERY_POLL_MS,
+      );
+    }
+
+    async function loadRecommendation() {
+      let failed = false;
+      try {
+        const recommendation = await getRecommendation(stationId, {
+          signal: controller.signal,
+        });
+        if (controller.signal.aborted) return;
+        setDetails((previous) => ({
+          ...previous,
+          recommendation,
+          recommendationError: "",
+        }));
+      } catch (error) {
+        if (controller.signal.aborted) return;
+        failed = true;
+        setDetails((previous) => ({
+          ...previous,
+          recommendationError:
+            error.message || "Unable to load the strategy recommendation.",
+        }));
+      }
+      recommendationTimer = setTimeout(
+        loadRecommendation,
+        failed ? DETAIL_RETRY_MS : RECOMMENDATION_POLL_MS,
+      );
+    }
+
+    loadBattery();
+    loadRecommendation();
+    return () => {
+      clearTimeout(batteryTimer);
+      clearTimeout(recommendationTimer);
+      controller.abort();
+    };
+  }, [stationId]);
+
+  return details.stationId === stationId
+    ? details
+    : {
+        battery: null,
+        recommendation: null,
+        batteryError: "",
+        recommendationError: "",
+      };
 }
 
 function useFinancialSummary(stationId, revision) {
@@ -192,6 +302,8 @@ export default function App() {
   const { summary: financial, error: financialError } =
     useFinancialSummary(stationId, financialRevision);
   const { health, error: healthError } = useStationHealth(stationId);
+  const { battery, recommendation, batteryError, recommendationError } =
+    useStationDetails(stationId);
   return (
     <>
       <main
@@ -213,6 +325,10 @@ export default function App() {
                 financialError={financialError}
                 health={health}
                 healthError={healthError}
+                battery={battery}
+                batteryError={batteryError}
+                recommendation={recommendation}
+                recommendationError={recommendationError}
                 error={error}
                 onModeChange={changeMode}
                 modeError={modeError}
