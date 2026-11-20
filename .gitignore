@@ -10,3 +10,4 @@ frontend/dist/
 # OS / Editor
 .DS_Store
 Thumbs.db
+Price_Model/data/sa1_predispatch.csv
